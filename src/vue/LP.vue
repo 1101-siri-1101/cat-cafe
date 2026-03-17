@@ -16,7 +16,7 @@
           class="h-[60px] md:h-[90px]"
         />
         <button
-          class="rounded-full flex h-[70px] w-[70px] cursor-pointer items-center justify-center bg-[#756659] font-bold text-white text-4xl md:h-[100px] md:w-[100px]"
+          class="rounded-full border-none flex h-[70px] w-[70px] cursor-pointer items-center justify-center bg-[#756659] font-bold text-white text-4xl md:h-[100px] md:w-[100px]"
           :class="{ 'md:text-sm text-[11px]': !isOpenMenu }"
           @click="switchDisplayMenu"
         >
@@ -31,7 +31,7 @@
     <Concept />
     <Concept />
     <Concept />
-    <Concept />
+    <Footer />
   </div>
 </template>
 
@@ -40,6 +40,7 @@ import Menu from "../components/menu.vue";
 import { computed } from "vue";
 import Movie from "../components/Movie.vue";
 import Concept from "../components/Concept.vue";
+import Footer from "../components/Footer.vue";
 
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
