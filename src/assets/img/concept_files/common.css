@@ -1,0 +1,847 @@
+@charset "utf-8";
+
+/*---------------------------------------------------------------------------------------------
+
+ベース
+
+---------------------------------------------------------------------------------------------*/
+
+html {
+  font-size: 62.5%;
+  scroll-behavior: smooth;
+}
+
+@supports (-webkit-touch-callout: none) {
+  html {
+    height: -webkit-fill-available;
+  }
+}
+
+body {
+  width: 100%;
+  font-family: 'Noto Sans JP', "Helvetica Neue", "Helvetica", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Arial", "Yu Gothic", "Meiryo", sans-serif;
+}
+
+@media screen and (max-width: 768px) {
+  @supports (-webkit-touch-callout: none) {
+    body {
+      height: -webkit-fill-available;
+    }
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  opacity: 1;
+  transition: .6s;
+}
+
+a:hover {
+  opacity: 0.6;
+}
+
+.disabled {
+  display: none;
+}
+
+@media screen and (min-width: 769px) {
+
+  .onlyPC {
+    display: block;
+  }
+
+  .onlySP {
+    display: none !important;
+  }
+
+}
+
+@media screen and (max-width: 768px) {
+
+  .onlyPC {
+    display: none !important;
+  }
+
+  .onlySP {
+    display: block;
+  }
+
+}
+
+/*---------------------------------------------------------------------------------------------
+
+webフォント
+
+---------------------------------------------------------------------------------------------*/
+
+.europa-l {
+  font-family: europa, sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal !important;
+}
+
+
+.europa-r {
+  font-family: europa, sans-serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+}
+
+.europa-b {
+  font-family: europa, sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+}
+
+/*---------------------------------------------------------------------------------------------
+
+FLEX
+
+---------------------------------------------------------------------------------------------*/
+
+.flex {
+  display:-webkit-box;
+  display:-ms-flexbox;
+  display:flex;
+}
+
+.al-start {
+  -webkit-box-align: start;
+	-ms-flex-align: start;
+	align-items: flex-start;
+}
+
+.al-end {
+  -webkit-box-align: end;
+	-ms-flex-align: end;
+	align-items: flex-end;
+}
+
+.al-center {
+  -webkit-box-align: center;
+	-ms-flex-align: center;
+	align-items: center;
+}
+
+.jt-center {
+  -webkit-box-pack: center;
+	-ms-flex-pack: center;
+	justify-content: center;
+}
+
+.jt-around {
+  -ms-flex-pack: distribute;
+	justify-content: space-around;
+}
+
+.jt-between {
+  -webkit-box-pack: justify;
+	-ms-flex-pack: justify;
+	justify-content: space-between;
+}
+
+.jt-start {
+  -webkit-box-pack: start;
+	-ms-flex-pack: start;
+	justify-content: flex-start;
+}
+
+.jt-end {
+  -webkit-box-pack: end;
+	-ms-flex-pack: end;
+	justify-content: flex-end;
+}
+
+.flex_wrap {
+  -ms-flex-wrap: wrap;
+  	flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+
+  .sp_noflex {
+    display: block;
+  }
+
+  .sp_wrap {
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+
+  .sp_column-reverse {
+    -webkit-box-orient: vertical;
+  	-webkit-box-direction: reverse;
+  	-ms-flex-direction: column-reverse;
+  	flex-direction: column-reverse;
+  }
+
+}
+
+/*---------------------------------------------------------------------------------------------
+
+フェードインアニメーション
+
+---------------------------------------------------------------------------------------------*/
+
+/* 下からフェードイン */
+   .scroll_u.delighter {
+   /*
+   -webkit-transition: all .8s;
+   transition: all .8s ease-out .6s;
+   */
+   -webkit-transition: all .5s;
+   transition: all .5s linear .2s;
+   transform: translateY(10%);
+   opacity: 0;
+   }
+
+   .scroll_u.delighter.started {
+      transform: none;
+      opacity: 1;
+   }
+
+/* 左からフェードイン */
+    .scroll_l.delighter {
+   /*
+    -webkit-transition: all .8s;
+    transition: all .8s ease-out .6s;
+   */
+    -webkit-transition: all .5s;
+    transition: all .5s linear .2s;
+    transform: translateX(-5%);
+    opacity: 0;
+    }
+
+    .scroll_l.delighter.started {
+      transform: none;
+      opacity: 1;
+    }
+
+/* 右からフェードイン */
+    .scroll_r.delighter {
+    /*
+    -webkit-transition: all .8s;
+    transition: all .8s ease-out .6s;
+    */
+    -webkit-transition: all .5s;
+    transition: all .5s linear .2s;
+    transform: translateX(5%);
+    opacity: 0;
+    }
+
+    .scroll_r.delighter.started {
+      transform: none;
+      opacity: 1;
+    }
+
+.view {
+    /*
+    transition: 1.2s;
+    */
+    transition: all .5s linear .2s;
+    opacity: 0;
+    transform: translate(0px,60px);
+}
+.view.on {
+    opacity: 1;
+    transform: translate(0px,0px);
+    visibility: visible;
+}
+
+#chatplusview .view {
+    all: unset;
+}
+#chatplusview .view.on {
+    all: unset;
+}
+
+/*---------------------------------------------------------------------------------------------
+
+ヘッダー
+
+---------------------------------------------------------------------------------------------*/
+
+.header_cont {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 997 !important;
+}
+
+.header_cont.is-sticky {
+  background: #FFF;
+  -webkit-transition: top .45s cubic-bezier(.215,.61,.355,1);
+  transition: top .45s cubic-bezier(0.22, 0.61, 0.36, 1)
+}
+
+.header_cont_box {
+  width: 100%;
+  padding: 30px 100px;
+}
+
+.header_logo {
+  z-index: 3;
+  opacity: 1;
+  transition: .6s;
+}
+
+a.header_logo:hover {
+  opacity: 0.6;
+}
+
+.header_left {
+  position: relative;
+}
+
+.header_lang {
+  z-index: 3;
+  margin-left: 40px;
+  padding: 5px 10px;
+  border: 2px solid #756659;
+  border-radius: 30px;
+  color: #756659;
+  cursor: pointer;
+  background: #FFF;
+}
+
+.header_lang p {
+  position: relative;
+  padding-right: 15px;
+}
+
+.header_lang p::after {
+  position: absolute;
+  content: "";
+  top: 2px;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 9px 5px 0 5px;
+  border-color: #756659 transparent transparent transparent;
+}
+
+.header_nav_cont {
+  max-width: 1200px;
+  width: 90%;
+  margin: 40px auto 0 auto;
+  display: none;
+}
+
+.header_sns img {
+  width: 58px;
+  height: 58px;
+  margin-right: 20px;
+}
+
+.header_nav_cont ul {
+  width: 700px;
+}
+
+.header_nav_image {
+  width: 450px;
+  height: 520px;
+  margin-left: 50px;
+  overflow: hidden;
+}
+
+.header_nav_image img {
+  opacity: 0;
+  transition: opacity .6s ease, visibility .6s ease;
+}
+
+.header_nav_image img.enabled {
+  opacity: 100;
+}
+
+.lang_nav {
+  width: 90px;
+  position: absolute;
+  right: 0;
+  top: 50px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 1px 1px 40px 0 rgb(14 31 60 / 16%);
+  font-size: 1.4rem;
+  z-index: 3;
+}
+
+a.lang_sel {
+  display: block;
+  padding: 10px;
+  text-align: center;
+  transition: color .3s;
+  color: #756659;
+}
+
+a.lang_sel:hover {
+  color: #E37F60;
+}
+
+.header_submenu ul li {
+  display: inline-block;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #756659;
+  margin-right: 40px;
+}
+
+.header_submenu ul li:last-child {
+  margin-right: 0;
+}
+
+@media screen and (max-width: 1500px) {
+  .header_submenu ul li {
+    font-size: 1.6rem;
+    margin-right: 36px;
+  }
+}
+
+@media screen and (max-width: 1400px) {
+  .header_submenu ul li {
+    margin-right: 24px;
+  }
+}
+
+@media screen and (max-width: 1320px) {
+  .header_submenu ul li {
+    margin-right: 16px;
+  }
+}
+
+@media screen and (max-width: 1290px) {
+  .header_submenu ul li {
+    font-size: 1.4rem;
+  }
+}
+
+
+/*　ハンバーガーボタン */
+.hamburger {
+  position: relative;
+  display : block;
+  z-index : 3;
+  width : 100px;
+  height: 100px;
+  border-radius: 50px;
+  cursor: pointer;
+  text-align: center;
+  color: #FFF;
+  background: #756659;
+}
+
+.hamburger p {
+  font-family: europa, sans-serif !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+}
+
+.hamburger p::before {
+  position: absolute;
+  content: "MENU";
+  font-size: 1.4rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+}
+
+/* ナビ開いてる時のボタン */
+
+.hamburger.active p::before {
+  position: absolute;
+  content: "×";
+  font-size: 7rem;
+  top: 43%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+}
+
+.hamburger.active p {
+  font-family: europa, sans-serif !important;
+  font-weight: 300 !important;
+  font-style: normal !important;
+}
+
+nav.globalMenuSp {
+  position: fixed;
+  z-index : 0;
+  top  : 0;
+  left : 0;
+  color: #756659;
+  background: #FFF;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  /* opacity: 0; */
+  /* transition: opacity .6s ease, visibility .6s ease; */
+  display: none;
+  z-index: 999;
+}
+
+@media screen and (max-width: 768px) {
+  nav.globalMenuSp {
+    height: auto;
+  }
+}
+
+/*
+nav.globalMenuSp.active {
+  z-index: 999;
+}
+*/
+
+nav.globalMenuSp ul {
+  /*
+  margin: 0 auto;
+  padding: 0;
+  width: 100%;
+  */
+  width: 33.3%;
+}
+
+nav.globalMenuSp ul li {
+  list-style-type: none;
+  padding: 0;
+  /* width: 50%; */
+  /* width: 33.3%; */
+  width: 100%;
+}
+
+@media screen and (max-width: 768px) {
+  nav.globalMenuSp ul li {
+    width: 50%;
+    text-align: center;
+  }
+}
+
+/* nav.globalMenuSp ul li.list_child { */
+nav.globalMenuSp ul.list_child,
+nav.globalMenuSp ul.list_child li ul {
+  width: 100%;
+}
+
+nav.globalMenuSp ul.list_child li ul li {
+  width: 33.3%;
+}
+
+nav.globalMenuSp ul li:last-child {
+  padding-bottom: 0;
+}
+
+nav.globalMenuSp ul li p {
+  color: #756659;
+  padding: 24px 0;
+}
+
+nav.globalMenuSp ul li a {
+  font-size: 6rem;
+  display: block;
+  color: #756659;
+  padding: 24px 0;
+  text-decoration :none;
+  transition: color .3s;
+}
+
+nav.globalMenuSp ul.list_child li a {
+  padding: 0;
+}
+
+nav.globalMenuSp ul li.header_copy {
+  font-size: 1.4rem;
+  color: #756659;
+}
+
+nav.globalMenuSp ul li a:hover {
+  color: #E37F60;
+}
+
+nav.globalMenuSp ul li a span {
+  font-size: 1.8rem;
+  display: block;
+}
+
+/* このクラスを、jQueryで付与・削除する */
+/*
+nav.globalMenuSp.active {
+  opacity: 100;
+  height: 100vh;
+}
+*/
+
+nav.globalMenuSp.active .header_nav_cont {
+  display: flex;
+}
+
+.close_btn {
+  position: relative;
+    display: block;
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    cursor: pointer;
+    text-align: center;
+    color: #FFF;
+    background: #756659;
+}
+
+.close_btn p::before {
+    position: absolute;
+    content: "×";
+    font-size: 7rem;
+    top: 43%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+}
+
+
+@media screen and (max-width: 768px) {
+
+  .header_cont_box {
+    padding: 15px 20px;
+  }
+
+  .header_logo {
+    width: 125px;
+    height: auto;
+  }
+
+  .header_lang {
+    width: 100px;
+    text-align: center;
+  }
+
+  .header_lang p::after {
+    top: 2px;
+    right: 3px;
+  }
+
+  .hamburger {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+  }
+
+  .close_btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+  }
+
+  .hamburger.active p::before {
+    font-size: 3rem;
+  }
+
+  .close_btn p::before {
+    font-size: 3rem;
+  }
+
+  .header_nav_cont {
+    margin: 10px auto 0 auto;
+  }
+
+  /*
+  nav.globalMenuSp {
+    min-height: 100vh;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    nav.globalMenuSp {
+      min-height: -webkit-fill-available;
+    }
+  }
+  */
+
+  /* nav.globalMenuSp ul li { */
+  nav.globalMenuSp ul {
+    width: 100%;
+  }
+
+  nav.globalMenuSp ul li a {
+    font-size: 2.4rem;
+    padding: 10px 0;
+  }
+
+  nav.globalMenuSp ul li a span {
+    font-size: 1.2rem;
+  }
+
+  nav.globalMenuSp ul li p {
+    padding: 10px 0;
+  }
+
+  nav.globalMenuSp ul.list_child {
+    margin-bottom: 10px;
+  }
+
+  nav.globalMenuSp ul.list_child li {
+    width: 100%;
+  }
+
+  nav.globalMenuSp ul.list_child li ul li {
+    width: 100%;
+  }
+
+  nav.globalMenuSp ul.list_child li ul li.header_sns {
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  nav.globalMenuSp ul.list_child li ul li.header_sns a:nth-child(1) {
+    margin-right: 14px;
+  }
+
+  nav.globalMenuSp ul.list_child li ul li.header_sns a:nth-child(2) {
+    margin-left: 14px;
+    margin-right: 14px;
+  }
+
+  nav.globalMenuSp ul.list_child li ul li.header_sns a:nth-child(3) {
+    margin-left: 14px;
+  }
+
+  nav.globalMenuSp ul.list_child li ul li.header_sns img {
+    margin-right: 0;
+  }
+
+  /*
+  nav.globalMenuSp ul li:last-child {
+    margin-top: 20px;
+  }
+  */
+
+  .lang_nav {
+    width: 110px;
+    top: 40px;
+  }
+
+}
+
+
+/*---------------------------------------------------------------------------------------------
+
+フッター
+
+---------------------------------------------------------------------------------------------*/
+
+.footer_cont {
+  width: 100%;
+  height: 356px;
+  padding: 60px 100px;
+  background: url('/assets/img/common/bg-footer_img.jpg') no-repeat;
+  background-size: cover;
+  background-position: center;
+  color: #FFF;
+}
+
+.footer_cont div.footer_cont_box:first-child {
+  margin-bottom: 100px;
+}
+
+.footer_nav {
+  font-size: 1.8rem;
+}
+
+.footer_nav ul li {
+  margin: 0 30px;
+}
+
+.footer_nav ul li a {
+  position: relative;
+  display: inline-block;
+  transition: .3s;
+}
+
+.footer_nav ul li a::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  content: '';
+  width: 0;
+  height: 1px;
+  background-color: #FFF;
+  transition: .3s;
+}
+
+.footer_nav ul li a:hover::after {
+  width: 100%;
+}
+
+.footer_copy {
+  font-size: 1.4rem;
+  line-height: 1.5;
+}
+
+.footer_copy .privacypolicy_link {
+  font-size: 1.6rem;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.footer_sns ul li {
+  margin: 0 10px;
+}
+
+.footer_sns ul li img {
+  width: 58px;
+  height: 58px;
+}
+
+@media screen and (max-width: 768px) {
+
+  .footer_cont {
+    height: 300px;
+    padding: 30px;
+    background: url('/assets/img/common/bg-footer_img_sp.jpg') no-repeat;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .footer_logo {
+    display: block;
+    max-width: 125px;
+    height: auto;
+    margin: 0 auto 20px auto;
+  }
+
+  .footer_nav ul li {
+    margin: 5px 15px;
+  }
+
+  .footer_cont div.footer_cont_box:first-child {
+    margin-bottom: 20px;
+  }
+
+  .footer_cont div.footer_cont_box:last-child {
+    flex-flow: column-reverse;
+  }
+
+  .footer_copy {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+
+  .footer_copy .privacypolicy_link {
+    font-size: 1.4rem;
+  }
+
+  .footer_sns ul li img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .footer_sns {
+    margin-bottom: 20px;
+  }
+
+}

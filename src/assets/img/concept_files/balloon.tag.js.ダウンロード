@@ -1,0 +1,387 @@
+<balloon data-type={opts.design.type} hide={! startup_id} onclick={onClick}>
+	<div class="button-close" role="button" tabindex="0" onclick={hide}><i role="presentation" aria-hidden="true" class="cpfar fa-times fa-lg"></i></div>
+	<div class="content {autosize: ! opts.design.font.size}" style={contentStyle}>{content}</div>
+	<div class="padding" if={opts.design.type == 2}></div>
+
+	<script>
+		let self = this;
+		self.startup_id = null;
+		self.action_id = null;
+		self.order = null;
+		self.options = {};
+		self.content = null;
+		self.first_message = null;
+		self.first_questions = null;
+		self.suppress = {};
+		self.contentStyle = {};
+		let observers = [];
+		let timers = [];
+		let handlers = [];
+
+		const show = function(rule) {
+			if (self.startup_id == rule.startup_id) {
+				console.warn(self, rule);
+				return true;
+			}
+			if (self.order != null && self.order < rule.order) {
+				console.warn(self, rule);
+				return false;
+			}
+			if (self.suppress['*'] >= Date.now() || self.suppress[self.startup_id] >= Date.now()) {
+				console.warn(self.suppress);
+				return false;
+			}
+
+			self.startup_id = rule.startup_id;
+			self.action_id = rule.action_id;
+			self.order = rule.order;
+			self.options = rule.options;
+			self.content = rule.content;
+			self.first_message = rule.first_message;
+			self.first_questions = rule.first_questions;
+
+			if (! opts.design.font.size) {
+				const ctx = document.createElement('canvas').getContext('2d');
+				ctx.font = '100px ' + (opts.design.font.family || '"Hiragino Kaku Gothic ProN", "メイリオ", "Helvetica", "Arial", sans-serif');
+
+				const calc_width = function(lines) {
+					return lines.reduce(function(c, line) {
+						const metrics = ctx.measureText(line);
+						return Math.max(c, metrics.width / 100);
+					}, 0);
+				};
+
+				const lines = self.content.split(/[\r\n]+/);
+				const width = calc_width(lines);
+				self.contentStyle['font-size'] = `calc(min(var(--content-width) / ${width}, var(--content-height) / ${lines.length}))`;
+			}
+
+			self.update();
+
+			self.parent.balloonEvent({
+				'type': 'show',
+				'startup_id' : self.startup_id,
+			});
+
+			return true;
+		};
+
+		const initialize = function(balloon) {
+			if (! Array.isArray(balloon) || balloon.length <= 0) {return;}
+			const timezone_offset = window.chatplusData.config.timezone_offset + 9;
+			const elapsed_ms = 'jp_chatplus_app_accessTime' in window ? Date.now() - window.jp_chatplus_app_accessTime : 0;
+			const d = new Date();
+			const s = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds() + d.getUTCMilliseconds() / 1000;
+			const timestamp_ms = Date.now();
+
+			const check_page_conditions = function(conditions_page) {
+				if (conditions_page.length <= 0) {
+					return true;
+				}
+
+				const value = conditions_page.reduce(function(c, condition) {
+					return Math.max(c, condition.value.page);
+				}, -Infinity);
+
+				return elapsed_ms >= value;
+			};
+
+			const check_time_conditions = function(conditions_time) {
+				if (conditions_time.length <= 0) {
+					return true;
+				}
+
+				const d = new Date();
+				const s = d.getUTCHours() * 3600 + d.getUTCMinutes() * 60 + d.getUTCSeconds() + d.getUTCMilliseconds() / 1000;
+
+				return conditions_time.every(function(condition) {
+					const [begin_h, begin_m] = condition.value.begin.split(':').map(Number);
+					const [end_h, end_m] = condition.value.end.split(':').map(Number);
+					const begin = (begin_h * 3600 + begin_m * 60 - timezone_offset * 3600 + 86400) % 86400;
+					const end = (end_h * 3600 + end_m * 60 - timezone_offset * 3600 + 86400) % 86400;
+					if (begin < end) {
+						return begin <= s && s < end;
+					} else {
+						return !(end <= s && s < begin);
+					}
+				});
+			};
+
+			const check_date_conditions = function(conditions_date) {
+				if (conditions_date.length <= 0) {
+					return true;
+				}
+
+				const timestamp = Date.now() / 1000;
+				return conditions_date.every(function(condition) {
+					return condition.value.begin <= timestamp && timestamp < condition.value.end;
+				});
+			};
+
+			const check_element_conditions = function(conditions_element) {
+				if (conditions_element.length <= 0) {
+					return true;
+				}
+
+				return conditions_element.every(function(condition) {
+					const query = (condition.value.name === 'id' ? '#' : '.') + condition.value.value;
+
+					switch (condition.type) {
+						case 'element-exist': {
+							const element = document.body.querySelector(query);
+							return element !== null;
+						}
+						case 'element-content': {
+							const elements = document.body.querySelectorAll(query);
+							return Array.from(elements).some(function(element) {
+								switch (condition.value.function) {
+									case 'partial': {
+										return element.textContent && element.textContent.includes(condition.value.content);
+									}
+									case 'pattern': {
+										try {
+											const re = condition.value.content.startsWith('/') && condition.value.content.endsWith('/')
+												? new RegExp(condition.value.content.slice(1, -1))
+												: new RegExp(condition.value.content.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&').replaceAll('\\*', '.*'));
+											return re.test(element.textContent);
+										} catch (ex) {
+											console.warn(ex);
+											return false;
+										}
+									}
+									case 'exact':
+									default: {
+										return element.textContent === condition.value.content;
+									}
+								}
+							});
+						}
+					}
+				});
+			};
+
+			let scroll_condition_rate = {'px': 1};
+			const check_scroll_conditions = function(conditions_scroll) {
+				if (conditions_scroll.length <= 0) {
+					return true;
+				}
+
+				const y = conditions_scroll.reduce(function(c, condition) {
+					if (! (condition.value.unit in scroll_condition_rate)) {
+						switch (condition.value.unit) {
+							case '%': {
+								const bodyStyle = window.getComputedStyle(document.body);
+								const bodyMargin = parseFloat(bodyStyle['margin-top']) + parseFloat(bodyStyle['margin-bottom']);
+								scroll_condition_rate[condition.value.unit] = (document.body.offsetHeight + bodyMargin - window.innerHeight) / 100;
+								window.addEventListener('resize', function() {delete scroll_condition_rate['%'];}, {'once': true, 'passive': true});
+								break;
+							}
+							case 'vh': {
+								scroll_condition_rate[condition.value.unit] = window.innerHeight / 100;
+								window.addEventListener('resize', function() {delete scroll_condition_rate['vh'];}, {'once': true, 'passive': true});
+								break;
+							}
+						}
+					}
+					const value = condition.value.value * scroll_condition_rate[condition.value.unit];
+					return Math.max(c, value);
+				}, -Infinity);
+
+				return window.scrollY >= y;
+			};
+
+			const check_all_conditions = function(conditions) {
+				const conditions_page = conditions.filter(function(condition) {return condition.type === 'page';});
+				const conditions_element = conditions.filter(function(condition) {return condition.type === 'element-exist' || condition.type === 'element-content';});
+				const conditions_scroll = conditions.filter(function(condition) {return condition.type === 'scroll';});
+				const conditions_time = conditions.filter(function(condition) {return condition.type === 'time';});
+				const conditions_date = conditions.filter(function(condition) {return condition.type === 'date';});
+
+				return true
+					&& check_page_conditions(conditions_page)
+					&& check_element_conditions(conditions_element)
+					&& check_scroll_conditions(conditions_scroll)
+					&& check_time_conditions(conditions_time)
+					&& check_date_conditions(conditions_date);
+			};
+
+			const observe_elements = function(rule) {
+				if (check_all_conditions(rule.conditions)) {
+					show(rule);
+				} else {
+					const mo = new window.MutationObserver(function(mutations) {
+						const conditions_page = rule.conditions.filter(function(condition) {return condition.type === 'page';});
+						const conditions_element = rule.conditions.filter(function(condition) {return condition.type === 'element-exist' || condition.type === 'element-content';});
+						const conditions_scroll = rule.conditions.filter(function(condition) {return condition.type === 'scroll';});
+						const conditions_time = rule.conditions.filter(function(condition) {return condition.type === 'time';});
+						const conditions_date = rule.conditions.filter(function(condition) {return condition.type === 'date';});
+						const check_page = check_page_conditions(conditions_page);
+						const check_element = check_element_conditions(conditions_element);
+						const check_scroll = check_scroll_conditions(conditions_scroll);
+						const check_time = check_time_conditions(conditions_time);
+						const check_date = check_date_conditions(conditions_date);
+
+						if (check_element && check_page && check_time && check_date) {
+							mo.disconnect();
+							if (check_scroll) {
+								show(rule);
+							} else {
+								observe_scroll(rule);
+							}
+						}
+					});
+					mo.observe(document.body, {
+						'childList': true,
+						'subtree': true,
+					});
+					observers.push(mo);
+				}
+			};
+
+			const observe_scroll = function(rule) {
+				const f = function(ev) {
+					if (check_all_conditions(rule.conditions)) {
+						if (show(rule)) {
+							document.removeEventListener('scroll', f);
+						}
+					}
+				};
+				handlers.push(f);
+				document.addEventListener('scroll', f, {'passive': true});
+			};
+
+			balloon.forEach(function(rule) {
+				const conditions_page = rule.conditions.filter(function(condition) {return condition.type === 'page';});
+				const conditions_element = rule.conditions.filter(function(condition) {return condition.type === 'element-exist' || condition.type === 'element-content';});
+				const conditions_scroll = rule.conditions.filter(function(condition) {return condition.type === 'scroll';});
+				const conditions_time = rule.conditions.filter(function(condition) {return condition.type === 'time';});
+				const conditions_date = rule.conditions.filter(function(condition) {return condition.type === 'date';});
+
+				const page_s = conditions_page.reduce(function(c, condition) {return Math.max(c, condition.value.page);}, 0);
+				let wait_ms = page_s * 1000 - elapsed_ms;
+
+				const time_ms = conditions_time.length > 0
+					? conditions_time.reduce(function(c, condition) {
+						const [begin_h, begin_m] = condition.value.begin.split(':').map(Number);
+						const [end_h, end_m] = condition.value.end.split(':').map(Number);
+						const begin = (begin_h * 3600 + begin_m * 60 - timezone_offset * 3600 + 86400) % 86400;
+						const end = (end_h * 3600 + end_m * 60 - timezone_offset * 3600 + 86400) % 86400;
+						const s_ = (s + page_s) % 86400;
+						if (begin < end ? (begin <= s_ && s_ < end) : (!(end <= s_ && s_ < begin))) {
+							return 0;
+						} else {
+							const diff_s = (begin - s + 86400) % 86400;
+							return Math.min(c, Math.round(diff_s * 1000));
+						}
+					}, +Infinity)
+					: null;
+
+				const date_ms = conditions_date.length > 0
+					? conditions_date.reduce(function(c, condition) {
+						const diff_ms = (condition.value.begin * 1000) - timestamp_ms;
+						return Math.max(Math.min(c, diff_ms), 0);
+					}, +Infinity)
+					: null;
+
+				wait_ms = Math.max(wait_ms, time_ms, date_ms);
+
+				if (wait_ms > 0) {
+					if (conditions_element.length > 0) {
+						const timer_id = window.setTimeout(observe_elements.bind(null, rule, conditions_element, conditions_time, conditions_date), wait_ms);
+						timers.push(timer_id);
+					} else {
+						const timer_id = window.setTimeout(function() {
+							if (check_all_conditions(rule.conditions)) {
+								show(rule);
+							} else if (rule.conditions.some(function(condition) {return condition.type === 'scroll';})) {
+								observe_scroll(rule);
+							}
+						}, wait_ms);
+						timers.push(timer_id);
+					}
+				} else {
+					const conditions_page = rule.conditions.filter(function(condition) {return condition.type === 'page';});
+					const conditions_element = rule.conditions.filter(function(condition) {return condition.type === 'element-exist' || condition.type === 'element-content';});
+					const conditions_scroll = rule.conditions.filter(function(condition) {return condition.type === 'scroll';});
+					const conditions_time = rule.conditions.filter(function(condition) {return condition.type === 'time';});
+					const conditions_date = rule.conditions.filter(function(condition) {return condition.type === 'date';});
+					const check_page = check_page_conditions(conditions_page);
+					const check_element = check_element_conditions(conditions_element);
+					const check_scroll = check_scroll_conditions(conditions_scroll);
+					const check_time = check_time_conditions(conditions_time);
+					const check_date = check_date_conditions(conditions_date);
+
+					if (check_page && check_element && check_scroll && check_time && check_date) {
+						show(rule);
+					} else {
+						if (! check_element) {
+							observe_elements(rule);
+						}
+						if (! check_scroll) {
+							observe_scroll(rule);
+						}
+					}
+				}
+			});
+		};
+		if ('chatplus' in window && 'balloon' in window.chatplus) {
+			initialize(window.chatplus.balloon);
+		} else {
+			const waitForConfigTimerId = window.setInterval(function() {
+				if ('chatplus' in window && 'balloon' in window.chatplus) {
+					window.clearInterval(waitForConfigTimerId);
+					initialize(window.chatplus.balloon);
+				}
+			}, 200);
+		}
+
+		onClick(ev) {
+			self.parent.requestByBalloon({
+				'first_message': self.first_message,
+				'first_questions': self.first_questions,
+			});
+			self.parent.balloonEvent({
+				'type': 'click',
+				'startup_id' : self.startup_id,
+			});
+
+			self.cleanup();
+		}
+
+		hide(ev) {
+			ev.stopPropagation();
+
+			if (self.options) {
+				if (self.options.hide_suppress) {
+					self.suppress[self.startup_id] = Date.now() + self.options.hide_suppress;
+				}
+				if (self.options.hide_exclusive) {
+					self.suppress['*'] = +Infinity;
+				}
+			}
+
+			self.parent.balloonEvent({
+				'type': 'hide',
+				'startup_id' : self.startup_id,
+			});
+
+			self.startup_id = null;
+			self.action_id = null;
+			self.order = null;
+			self.options = {};
+			self.content = null;
+			self.first_message = null;
+			self.first_questions = null;
+			self.contentStyle = {};
+		}
+
+		cleanup() {
+			observers.forEach(function(mo) {mo.disconnect();});
+			observers = [];
+			timers.forEach(function(id) {window.clearTimeout(id);});
+			timers = [];
+			handlers.forEach(function(f) {document.removeEventListener('scroll', f);});
+			handlers = [];
+		}
+	</script>
+</balloon>

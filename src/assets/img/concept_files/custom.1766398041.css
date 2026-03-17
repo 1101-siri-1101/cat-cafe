@@ -1,0 +1,8 @@
+#eye_catcher{
+animation: shake_eye_catcher 3s infinite;
+}
+@keyframes shake_eye_catcher {
+0% { transform:translateY(0px); }
+50% { transform:translateY(50px); }
+100% { transform:translateY( 0px); }
+}
