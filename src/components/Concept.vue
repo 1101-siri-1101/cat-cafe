@@ -21,12 +21,13 @@
         気ままに、たっぷりと、<br />
         猫といる幸せに包まれてください。<br />
       </h1>
-
-      <button
-        class="mt-6 w-[140px] rounded-full border border-[#756659] py-2 text-[#756659] cursor-pointer hover:bg-orange-300/20"
-      >
-        もっと見る
-      </button>
+      <div class="max-md:flex max-md:justify-end max-md:pl-20">
+        <button
+          class="mt-6 w-[140px] rounded-full border border-[#756659] py-2 text-[#756659] cursor-pointer hover:bg-orange-300/20"
+        >
+          もっと見る
+        </button>
+      </div>
     </div>
   </section>
 </template>

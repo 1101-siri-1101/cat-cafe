@@ -29,8 +29,8 @@
 
     <Menu v-if="isOpenMenu" />
     <Concept />
-    <Concept />
-    <Concept />
+    <Info />
+
     <Footer />
   </div>
 </template>
@@ -43,6 +43,7 @@ import Concept from "../components/Concept.vue";
 import Footer from "../components/Footer.vue";
 
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import Info from "../components/info.vue";
 
 const isScrolled = ref(false);
 const isOpenMenu = ref<boolean>(false);
