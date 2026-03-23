@@ -1,5 +1,5 @@
 <template>
-  <section class="relative h-[80%] w-full overflow-hidden">
+  <section class="relative h-[90%] w-full overflow-hidden">
     <video
       autoplay
       muted

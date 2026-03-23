@@ -1,5 +1,5 @@
 <template>
-  <section class="relative mb-[30px] w-full">
+  <section class="relative mb-[30px] w-full py-20">
     <img
       src="../assets/img/concept.png"
       class="h-[680px] w-full object-cover md:h-[680px]"

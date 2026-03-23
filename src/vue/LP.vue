@@ -30,6 +30,7 @@
     <Menu v-if="isOpenMenu" />
     <Concept />
     <Info />
+    <ShopList />
 
     <Footer />
   </div>
@@ -44,6 +45,7 @@ import Footer from "../components/Footer.vue";
 
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import Info from "../components/info.vue";
+import ShopList from "../components/ShopList.vue";
 
 const isScrolled = ref(false);
 const isOpenMenu = ref<boolean>(false);
