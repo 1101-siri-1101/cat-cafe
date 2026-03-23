@@ -37,14 +37,14 @@
 </template>
 
 <script setup lang="ts">
-import Menu from "../components/menu.vue";
+import Menu from "../components/Menu.vue";
 import { computed } from "vue";
 import Movie from "../components/Movie.vue";
 import Concept from "../components/Concept.vue";
 import Footer from "../components/Footer.vue";
 
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import Info from "../components/info.vue";
+import Info from "../components/Info.vue";
 import ShopList from "../components/ShopList.vue";
 
 const isScrolled = ref(false);
